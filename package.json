@@ -10,5 +10,15 @@
     "jquery": "^2.1.4",
     "oojs": "^1.1.10",
     "oojs-ui": "^0.13.3"
+  },
+  "devDependencies": {
+    "jscs": "^2.6.0",
+    "jshint": "^2.9.1-rc1"
+  },
+  "scripts": {
+    "lint": "jshint resources/**.js",
+    "cc": "jscs resources/**.js",
+
+    "test": "npm run lint && npm run cc"
   }
 }

@@ -3,15 +3,11 @@ Caman.Plugin.register( 'flip', function ( axis ) {
 	width = this.canvas.width;
 	height = this.canvas.height;
 
-	// Support NodeJS by checking for exports object
-	if ( typeof exports !== 'undefined' && exports !== null ) {
-		canvas = new Canvas( width, height );
-	} else {
-		canvas = document.createElement( 'canvas' );
-		canvas.width = width;
-		canvas.height = height;
-		canvas.id = this.canvas.id;
-	}
+	// Not suppoorting NodeJS
+	canvas = document.createElement( 'canvas' );
+	canvas.width = width;
+	canvas.height = height;
+	canvas.id = this.canvas.id;
 
 	ctx = canvas.getContext( '2d' );
 

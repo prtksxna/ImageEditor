@@ -1,6 +1,7 @@
 ( function ( $, OO ) {
 
-mw = {};
+// We probably don't want this in the mw namespace
+var mw = mw || {};
 
 mw.ImageTweaks = function ( containerId, imagePath ) {
 
@@ -20,7 +21,7 @@ mw.ImageTweaks = function ( containerId, imagePath ) {
 	// Editor
 	this.editor = new OO.ui.PanelLayout( {
 		framed: true,
-		padded: false,
+		padded: false
 	} );
 
 	// TODO Get a container
@@ -62,17 +63,18 @@ mw.ImageTweaks = function ( containerId, imagePath ) {
 	this.toolbar.$actions.append( this.saveButton.$element );
 
 	this.editor.$element.append( this.toolbar.$element );
-}
+};
+
+mw.ImageTweaks.prototype.intialize = function () {
+};
 
 mw.ImageTweaks.prototype.setupTools = function () {
-
 	// Undo
 	this.setupTool( {
 		name: 'undo',
 		icon: 'undo',
 		title: 'Undo'
 	}, function () {
-		console.log( 'undo' );
 		this.setActive( false );
 	} );
 
@@ -82,7 +84,6 @@ mw.ImageTweaks.prototype.setupTools = function () {
 		icon: 'redo',
 		title: 'Redo'
 	}, function () {
-		console.log( 'redo' );
 		this.setActive( false );
 	} );
 
@@ -148,13 +149,12 @@ mw.ImageTweaks.prototype.setupTools = function () {
 		icon: 'crop',
 		title: 'Crop'
 	}, function () {
-		console.log( 'crop' );
 		this.setActive( false );
 	} );
 };
 
 mw.ImageTweaks.prototype.setupTool = function ( config, onSelect ) {
-	function Tool () {
+	function Tool() {
 		Tool.super.apply( this, arguments );
 	}
 	OO.inheritClass( Tool, OO.ui.Tool );
@@ -163,14 +163,14 @@ mw.ImageTweaks.prototype.setupTool = function ( config, onSelect ) {
 	Tool.static.icon = config.icon;
 	Tool.static.title = config.title;
 
-	Tool.prototype.onSelect = onSelect
+	Tool.prototype.onSelect = onSelect;
 
 	Tool.prototype.onUpdateState = function () {
 		this.setActive( false );
 	};
 
 	this.toolFactory.register( Tool );
-}
+};
 
 mw.ImageTweaks.prototype.doAction = function ( action ) {
 	switch ( action ) {
@@ -190,12 +190,13 @@ mw.ImageTweaks.prototype.doAction = function ( action ) {
 
 		default:
 			throw new Error( 'Unknown action' );
-	};
+	}
 };
 
 // Init
 $( function () {
 	var e = new mw.ImageTweaks( 'editor', 'cat.png' );
+	e.initialize();
 } );
 
 }( jQuery, OO ) );

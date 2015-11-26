@@ -1,0 +1,21 @@
+{
+	"camelcase": true,
+	"curly": true,
+	"eqeqeq": true,
+	"immed": true,
+	"latedef": true,
+	"noarg": true,
+	"noempty": true,
+	"nonew": true,
+	"quotmark": "single",
+	"trailing": true,
+	"undef": true,
+	"unused": true,
+	"onevar": true,
+	"browser": true,
+	"predef": [
+		"jQuery",
+		"Caman",
+		"OO"
+	]
+}
