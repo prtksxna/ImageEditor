@@ -1,12 +1,9 @@
 {
-  "name": "imageeditor",
+  "name": "ImageEditor",
   "version": "0.0.1",
-  "description": "",
+  "description": "Image editing interface",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Prateek Saxena",
+  "author": "prtksxna",
   "license": "MIT",
   "dependencies": {
     "caman-dist-only": "^4.1.3",
