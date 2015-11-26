@@ -1,0 +1,15 @@
+{
+  "name": "imageeditor",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Prateek Saxena",
+  "license": "MIT",
+  "dependencies": {
+    "caman-dist-only": "^4.1.3",
+    "oojs-ui": "^0.13.3"
+  }
+}

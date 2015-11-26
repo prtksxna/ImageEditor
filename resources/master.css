@@ -1,0 +1,52 @@
+html, body {
+	margin: 0;
+	height: 100%;
+	font-family: sans-serif;
+}
+
+.mwe-imagetweaks-editor {
+	background: #262626;
+	height: 100%;
+}
+
+.mwe-imagetweaks-canvas-container {
+	position: relative;
+	height: 100%;
+}
+
+.mwe-imagetweaks-canvas-container img,
+.mwe-imagetweaks-canvas-container canvas {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+/* Icons */
+.oo-ui-icon-undo {
+	background-image: url( icons/undo.svg );
+}
+
+.oo-ui-icon-redo {
+	background-image: url( icons/redo.svg );
+}
+
+.oo-ui-icon-rotate-clockwise {
+	background-image: url( icons/rotate-clockwise.svg );
+}
+
+.oo-ui-icon-rotate-counter-clockwise {
+	background-image: url( icons/rotate-counter-clockwise.svg );
+}
+
+.oo-ui-icon-flip-vertical {
+	background-image: url( icons/flip-vertical.svg );
+}
+
+.oo-ui-icon-flip-horizontal {
+	background-image: url( icons/flip-horizontal.svg );
+}
+
+.oo-ui-icon-crop {
+	background-image: url( icons/crop.svg );
+}
