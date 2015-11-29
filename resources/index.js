@@ -1,16 +1,15 @@
 ( function ( $, OO ) {
 
-// We probably don't want this in the mw namespace
-var mw = mw || {};
+var ImageEditor;
 
 /**
- * @class ImageTweaks
+ * @class ImageEditor
  *
  * ImageEditor is a user interface that allows making edits to
  * images. It uses OO.ui.Toolbar and OO.ui.PanelLayout for the basic
  * UI, and Caman for image editing.
  *
- *     var e = new mw.ImageTweaks( {
+ *     var e = new ImageEditor( {
  *         containerId: 'editor',
  *         imagePath: 'cat.png'
  *     } );
@@ -20,7 +19,7 @@ var mw = mw || {};
  * editor will be rendered.
  * @cfg {string} imagePath Path of the image to load in the editor.
  */
-mw.ImageTweaks = function ( config ) {
+ImageEditor = function ( config ) {
 
 	if ( config.containerId === undefined || config.imagePath === undefined ) {
 		throw new Error( 'All config not passed' );
@@ -29,14 +28,14 @@ mw.ImageTweaks = function ( config ) {
 	// Setup container
 	this.$container = $( '#' + config.containerId );
 	this.$container
-		.addClass( 'mwe-imagetweaks-editor' )
+		.addClass( 'mwe-imageeditor-editor' )
 		.append(
 			$( '<div>' )
-				.addClass( 'mwe-imagetweaks-canvas-container' )
+				.addClass( 'mwe-imageeditor-canvas-container' )
 				.append(
 					$( '<img>' )
 						.attr( 'src', config.imagePath )
-						.attr( 'id', 'mwe-imagetweaks-image' )
+						.attr( 'id', 'mwe-imageeditor-image' )
 				)
 		);
 
@@ -84,7 +83,7 @@ mw.ImageTweaks = function ( config ) {
 /**
  * Initializes the editor.
  */
-mw.ImageTweaks.prototype.initialize = function () {
+ImageEditor.prototype.initialize = function () {
 	this.setupToolbar();
 
 	// TODO Stuff about the editor's state
@@ -93,7 +92,7 @@ mw.ImageTweaks.prototype.initialize = function () {
 /**
  * Setups up the toolbar.
  */
-mw.ImageTweaks.prototype.setupToolbar = function () {
+ImageEditor.prototype.setupToolbar = function () {
 	this.setupTools();
 
 	// Setup toolbar
@@ -112,7 +111,7 @@ mw.ImageTweaks.prototype.setupToolbar = function () {
  * @param {Object} groups
  * @return {Object}
  */
-mw.ImageTweaks.prototype.setToolbarGroups = function ( groups ) {
+ImageEditor.prototype.setToolbarGroups = function ( groups ) {
 	this.toolbarGroups = groups;
 	return this.toolbarGroups;
 };
@@ -122,11 +121,11 @@ mw.ImageTweaks.prototype.setToolbarGroups = function ( groups ) {
  *
  * @return {Object}
  */
-mw.ImageTweaks.prototype.getToolbarGroups = function () {
+ImageEditor.prototype.getToolbarGroups = function () {
 	return this.toolbarGroups;
 };
 
-mw.ImageTweaks.prototype.setupTools = function () {
+ImageEditor.prototype.setupTools = function () {
 	// Undo
 	this.setupTool( {
 		name: 'undo',
@@ -151,7 +150,7 @@ mw.ImageTweaks.prototype.setupTools = function () {
 		icon: 'rotate-counter-clockwise',
 		title: 'Rotate counter clockwise'
 	}, function () {
-		Caman( '#mwe-imagetweaks-image', function () {
+		Caman( '#mwe-imageeditor-image', function () {
 			this.rotate( -90 );
 			this.render();
 		} );
@@ -165,7 +164,7 @@ mw.ImageTweaks.prototype.setupTools = function () {
 		icon: 'rotate-clockwise',
 		title: 'Rotate clockwise'
 	}, function () {
-		Caman( '#mwe-imagetweaks-image', function () {
+		Caman( '#mwe-imageeditor-image', function () {
 			this.rotate( 90 );
 			this.render();
 		} );
@@ -179,7 +178,7 @@ mw.ImageTweaks.prototype.setupTools = function () {
 		icon: 'flip-vertical',
 		title: 'Flip vertical'
 	}, function () {
-		Caman( '#mwe-imagetweaks-image', function () {
+		Caman( '#mwe-imageeditor-image', function () {
 			this.flip( 'y' );
 			this.render();
 		} );
@@ -193,7 +192,7 @@ mw.ImageTweaks.prototype.setupTools = function () {
 		icon: 'flip-horizontal',
 		title: 'Flip horizontal'
 	}, function () {
-		Caman( '#mwe-imagetweaks-image', function () {
+		Caman( '#mwe-imageeditor-image', function () {
 			this.flip( 'x' );
 			this.render();
 		} );
@@ -211,7 +210,7 @@ mw.ImageTweaks.prototype.setupTools = function () {
 	} );
 };
 
-mw.ImageTweaks.prototype.setupTool = function ( config, onSelect ) {
+ImageEditor.prototype.setupTool = function ( config, onSelect ) {
 	function Tool() {
 		Tool.super.apply( this, arguments );
 	}
@@ -230,17 +229,17 @@ mw.ImageTweaks.prototype.setupTool = function ( config, onSelect ) {
 	this.toolFactory.register( Tool );
 };
 
-mw.ImageTweaks.prototype.doAction = function ( action ) {
+ImageEditor.prototype.doAction = function ( action ) {
 	switch ( action ) {
 		case 'rotateCounterClockwise':
-			Caman( '#mwe-imagetweaks-image', function () {
+			Caman( '#mwe-imageeditor-image', function () {
 				this.rotate( -90 );
 				this.render();
 			} );
 			break;
 
 		case 'rotateClockwise':
-			Caman( '#mwe-imagetweaks-image', function () {
+			Caman( '#mwe-imageeditor-image', function () {
 				this.rotate( 90 );
 				this.render();
 			} );
@@ -253,7 +252,7 @@ mw.ImageTweaks.prototype.doAction = function ( action ) {
 
 // Init
 $( function () {
-	var e = new mw.ImageTweaks( {
+	var e = new ImageEditor( {
 		containerId: 'editor',
 		imagePath: 'cat.png'
 	} );
