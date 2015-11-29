@@ -16,6 +16,8 @@
 	"predef": [
 		"jQuery",
 		"Caman",
-		"OO"
+		"OO",
+		"ImageTool",
+		"ImageEditor"
 	]
 }
