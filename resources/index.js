@@ -3,9 +3,31 @@
 // We probably don't want this in the mw namespace
 var mw = mw || {};
 
-mw.ImageTweaks = function ( containerId, imagePath ) {
+/**
+ * @class ImageTweaks
+ *
+ * ImageEditor is a user interface that allows making edits to
+ * images. It uses OO.ui.Toolbar and OO.ui.PanelLayout for the basic
+ * UI, and Caman for image editing.
+ *
+ *     var e = new mw.ImageTweaks( {
+ *         containerId: 'editor',
+ *         imagePath: 'cat.png'
+ *     } );
+ *     e.initialize();
+ *
+ * @cfg {string} containerId DOM ID of the containter in which the
+ * editor will be rendered.
+ * @cfg {string} imagePath Path of the image to load in the editor.
+ */
+mw.ImageTweaks = function ( config ) {
 
-	this.$container = $( '#' + containerId );
+	if ( config.containerId === undefined || config.imagePath === undefined ) {
+		throw new Error( 'All config not passed' );
+	}
+
+	// Setup container
+	this.$container = $( '#' + config.containerId );
 	this.$container
 		.addClass( 'mwe-imagetweaks-editor' )
 		.append(
@@ -13,7 +35,7 @@ mw.ImageTweaks = function ( containerId, imagePath ) {
 				.addClass( 'mwe-imagetweaks-canvas-container' )
 				.append(
 					$( '<img>' )
-						.attr( 'src', imagePath )
+						.attr( 'src', config.imagePath )
 						.attr( 'id', 'mwe-imagetweaks-image' )
 				)
 		);
@@ -23,8 +45,6 @@ mw.ImageTweaks = function ( containerId, imagePath ) {
 		framed: true,
 		padded: false
 	} );
-
-	// TODO Get a container
 	this.$container.append( this.editor.$element );
 
 	// Toolbar
@@ -33,11 +53,15 @@ mw.ImageTweaks = function ( containerId, imagePath ) {
 	this.toolbar = new OO.ui.Toolbar( this.toolFactory, this.toolGroupFactory, {
 		actions: true
 	} );
+	this.editor.$element.append( this.toolbar.$element );
 
-	this.setupTools();
-
-	// Setup toolbar
-	this.toolbar.setup( [
+	/**
+	 * @property toolbarGroups The groups config passed to the
+	 * [toolbar's
+	 * setup](https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Toolbar-method-setup)
+	 * method.
+	 */
+	this.toolbarGroups = [
 		{
 			type: 'bar',
 			include: [ 'undo', 'redo' ]
@@ -54,18 +78,52 @@ mw.ImageTweaks = function ( containerId, imagePath ) {
 			type: 'bar',
 			include: [ 'crop' ]
 		}
-	] );
+	];
+};
+
+/**
+ * Initializes the editor.
+ */
+mw.ImageTweaks.prototype.initialize = function () {
+	this.setupToolbar();
+
+	// TODO Stuff about the editor's state
+};
+
+/**
+ * Setups up the toolbar.
+ */
+mw.ImageTweaks.prototype.setupToolbar = function () {
+	this.setupTools();
+
+	// Setup toolbar
+	this.toolbar.setup( this.getToolbarGroups() );
 
 	this.saveButton = new OO.ui.ButtonWidget( {
 		label: 'Save',
 		flags: [ 'progressive', 'primary' ]
 	} );
 	this.toolbar.$actions.append( this.saveButton.$element );
-
-	this.editor.$element.append( this.toolbar.$element );
 };
 
-mw.ImageTweaks.prototype.intialize = function () {
+/**
+ * Setter method for {@link #property-toolbarGroups}.
+ *
+ * @param {Object} groups
+ * @return {Object}
+ */
+mw.ImageTweaks.prototype.setToolbarGroups = function ( groups ) {
+	this.toolbarGroups = groups;
+	return this.toolbarGroups;
+};
+
+/**
+ * Getter method for {@link #property-toolbarGroups}.
+ *
+ * @return {Object}
+ */
+mw.ImageTweaks.prototype.getToolbarGroups = function () {
+	return this.toolbarGroups;
 };
 
 mw.ImageTweaks.prototype.setupTools = function () {
@@ -195,7 +253,10 @@ mw.ImageTweaks.prototype.doAction = function ( action ) {
 
 // Init
 $( function () {
-	var e = new mw.ImageTweaks( 'editor', 'cat.png' );
+	var e = new mw.ImageTweaks( {
+		containerId: 'editor',
+		imagePath: 'cat.png'
+	} );
 	e.initialize();
 } );
 

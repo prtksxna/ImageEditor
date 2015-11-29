@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "jscs": "^2.6.0",
+    "jsduck": "^0.2.1",
     "jshint": "^2.9.1-rc1",
     "uglify": "^0.1.5"
   },
@@ -22,6 +23,7 @@
     "concat": "cat resources/caman.flip.js > dist/imageeditor.js && cat resources/index.js >> dist/imageeditor.js",
     "uglify": "uglify -s dist/imageeditor.js -o dist/imageeditor.min.js",
     "test": "npm run lint && npm run cc",
+    "docs": "jsduck resources --output docs",
     "build": "npm run concat && npm run uglify",
     "prebuild": "npm run test"
   }
