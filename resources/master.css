@@ -22,6 +22,17 @@ html, body {
 	transform: translate(-50%, -50%);
 }
 
+.mwe-imageeditor-interactivepanel {
+	margin-top: 0 !important;
+	border-top: none;
+	border-radius: 0;
+	background: #fff;
+}
+
+.mwe-imageeditor-interactivepanel .oo-ui-textInputWidget {
+	width: auto;
+}
+
 /* Icons */
 .oo-ui-icon-undo {
 	background-image: url( icons/undo.svg );

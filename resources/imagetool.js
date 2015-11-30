@@ -10,6 +10,7 @@ var ImageTool;
  * @cfg {string} name
  * @cfg {string} icon
  * @cfg {string} title
+ * @cfg {boolean} isInteractive
  */
 ImageTool = function ( config ) {
 
@@ -24,6 +25,7 @@ ImageTool = function ( config ) {
 	this.name =  config.name;
 	this.icon = config.icon;
 	this.title = config.title;
+	this.isInteractive = config.isInteractive || false;
 };
 
 OO.initClass( ImageTool );

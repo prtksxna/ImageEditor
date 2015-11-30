@@ -1,4 +1,4 @@
-( function ( $, OO, ImageTool ) {
+( function ( $, OO, ImageTool, Caman ) {
 
 var ImageEditor;
 
@@ -54,6 +54,16 @@ ImageEditor = function ( config ) {
 	} );
 	this.editor.$element.append( this.toolbar.$element );
 
+	// Interactive panel
+	this.interactivePanel = new OO.ui.PanelLayout( {
+		expanded: false,
+		framed: true,
+		padded: true,
+		classes: [ 'mwe-imageeditor-interactivepanel' ]
+	} );
+	this.interactivePanel.toggle( false );
+	this.editor.$element.append( this.interactivePanel.$element );
+
 	/**
 	 * @property {Array} toolbarGroups The groups config passed to the
 	 * [toolbar's
@@ -104,6 +114,11 @@ ImageEditor = function ( config ) {
 	 * @property {boolean} isRedoable Is the editor redoable?
 	 */
 	this.isRedoable = false;
+
+	/**
+	 * @property {boolean} interactiveTool Is an interactive tool currently active?
+	 */
+	this.interactiveTool = false;
 };
 
 OO.initClass( ImageEditor );
@@ -130,7 +145,7 @@ ImageEditor.prototype.setupToolbar = function () {
 
 	this.saveButton = new OO.ui.ButtonWidget( {
 		label: 'Save',
-		flags: [ 'progressive', 'primary' ]
+		flags: [ 'constructive', 'primary' ]
 	} );
 
 	// Refresh the undo redo states
@@ -243,7 +258,7 @@ ImageEditor.prototype.setupUndoRedo = function () {
 	};
 
 	UndoTool.prototype.onUpdateState = function () {
-		if ( editor.isUndoable ) {
+		if ( editor.isUndoable && !editor.getInteractiveTool() ) {
 			this.setDisabled( false );
 		} else {
 			this.setDisabled( true );
@@ -270,7 +285,7 @@ ImageEditor.prototype.setupUndoRedo = function () {
 	};
 
 	RedoTool.prototype.onUpdateState = function () {
-		if ( editor.isRedoable ) {
+		if ( editor.isRedoable && !editor.getInteractiveTool() ) {
 			this.setDisabled( false );
 		} else {
 			this.setDisabled( true );
@@ -279,6 +294,29 @@ ImageEditor.prototype.setupUndoRedo = function () {
 	};
 
 	this.toolFactory.register( RedoTool );
+};
+
+/**
+ * Setter method for {@link #property-interactiveTool}.
+ *
+ * @param {boolean} value
+ * @return {boolean}
+ */
+ImageEditor.prototype.setInteractiveTool = function ( value ) {
+	this.interactiveTool = value;
+	this.interactivePanel.$element.empty();
+	this.interactivePanel.toggle( value );
+	this.toolbar.emit( 'updateState' );
+	return this.interactiveTool;
+};
+
+/**
+ * Getter method for {@link #property-interactiveTool}.
+ *
+ * @return {boolean}
+ */
+ImageEditor.prototype.getInteractiveTool = function () {
+	return this.interactiveTool;
 };
 
 /**
@@ -294,7 +332,7 @@ ImageEditor.prototype.setupTools = function () {
  * Sets up an instance of ImageTool with the toolbar.
  */
 ImageEditor.prototype.setupTool = function ( tool ) {
-	var self = this;
+	var editor = this;
 
 	function Tool() {
 		Tool.super.apply( this, arguments );
@@ -306,13 +344,29 @@ ImageEditor.prototype.setupTool = function ( tool ) {
 	Tool.static.title = tool.title;
 
 	Tool.prototype.onSelect = function () {
-		var action = tool.doAction( '#mwe-imageeditor-image' );
-		self.addAction( tool.name, action );
+		var action;
+		if ( tool.isInteractive ) {
+			editor.setInteractiveTool( true );
+			tool.getAction( editor.interactivePanel, '#mwe-imageeditor-image' )
+				.done( function ( action ) {
+					editor.addAction( tool.name, action );
+				} ).always( function () {
+					editor.setInteractiveTool( false );
+				} );
+		} else {
+			action = tool.doAction( '#mwe-imageeditor-image' );
+			editor.addAction( tool.name, action );
+		}
 
 		this.setActive( false );
 	};
 
 	Tool.prototype.onUpdateState = function () {
+		if ( editor.getInteractiveTool() ) {
+			this.setDisabled( true );
+		} else {
+			this.setDisabled( false );
+		}
 		this.setActive( false );
 	};
 
@@ -330,7 +384,7 @@ ImageEditor.prototype.registerTool = function ( tool ) {
  * Instantiate and register core tools with the editor
  */
 ImageEditor.prototype.registerCoreTools = function () {
-	var rotateCounterClockwise, rotateClockwise, flipVertical, flipHorizontal;
+	var rotateCounterClockwise, rotateClockwise, flipVertical, flipHorizontal, crop;
 
 	rotateCounterClockwise = new ImageTool(  {
 		name: 'rotateCounterClockwise',
@@ -415,8 +469,92 @@ ImageEditor.prototype.registerCoreTools = function () {
 		} );
 	};
 	this.registerTool( flipHorizontal );
+
+	crop = new ImageTool( {
+		name: 'crop',
+		icon: 'crop',
+		title: 'Crop',
+		isInteractive: true
+	} );
+
+	crop.getAction = function ( panel, image ) {
+		this.deferred = $.Deferred();
+		this.panel = panel;
+		this.image = image;
+		this.setupInterface();
+
+		return this.deferred.promise();
+	};
+
+	crop.setupInterface = function () {
+		var controls;
+
+		this.widthInput = new OO.ui.TextInputWidget( { value: 20 } );
+		this.heightInput = new OO.ui.TextInputWidget( { value: 20 } );
+		this.xInput = new OO.ui.TextInputWidget( { value: 0 } );
+		this.yInput = new OO.ui.TextInputWidget( { value: 0 } );
+		this.crop = new OO.ui.ButtonWidget( {
+			label: 'Crop',
+			flags: [ 'primary', 'progressive' ]
+		} );
+		this.cancel = new OO.ui.ButtonWidget( {
+			label: 'Cancel',
+			flags: [ 'destructive' ]
+		} );
+
+		this.crop.on( 'click', function () {
+			var action = {
+				width: this.widthInput.getValue(),
+				height: this.heightInput.getValue(),
+				x: this.xInput.getValue(),
+				y: this.yInput.getValue()
+			};
+			this.deferred.resolve( this.doAction( this.image, action ) );
+		}.bind( this ) );
+
+		this.cancel.on( 'click', function () {
+			this.deferred.reject();
+		}.bind( this ) );
+
+		controls = new OO.ui.HorizontalLayout( {
+			items: [
+				this.widthInput,
+				this.heightInput,
+				this.xInput,
+				this.yInput,
+				this.crop,
+				this.cancel
+			]
+		} );
+		this.panel.$element.append( controls.$element );
+	};
+
+	crop.doAction = function ( image, action ) {
+		var canvas, height, width, data;
+		canvas = $( image ).eq( 0 )[ 0 ];
+		height = canvas.height;
+		width = canvas.width;
+		data = canvas.getContext( '2d' ).getImageData( 0, 0, width, height );
+		action.oldImageData = data;
+		Caman( image, function () {
+			this.crop( action.width, action.height, action.x, action.y );
+			this.render();
+		} );
+
+		return action;
+	};
+
+	crop.undoAction = function ( image, action ) {
+		var canvas = $( image ).eq( 0 )[ 0 ];
+		canvas.height = action.oldImageData.height;
+		canvas.width = action.oldImageData.width;
+		canvas.getContext( '2d' ).putImageData(	action.oldImageData, 0, 0 );
+	};
+
+	this.registerTool( crop );
+
 };
 
 window.ImageEditor = ImageEditor;
 
-}( jQuery, OO, ImageTool ) );
+}( jQuery, OO, ImageTool, Caman ) );
