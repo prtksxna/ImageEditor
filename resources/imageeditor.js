@@ -39,6 +39,9 @@ ImageEditor = function ( config ) {
 				)
 		);
 
+	this.image = Caman( '#mwe-imageeditor-image' );
+	window.k = this.image;
+
 	// Editor
 	this.editor = new OO.ui.PanelLayout( {
 		framed: true,
@@ -220,7 +223,7 @@ ImageEditor.prototype.updateUndoRedoState = function () {
  */
 ImageEditor.prototype.undo = function () {
 	var lastAction = this.actions[ this.currentAction ];
-	this.tools[ lastAction.name ].undoAction( '#mwe-imageeditor-image', lastAction.action );
+	this.tools[ lastAction.name ].undoAction( this.image, lastAction.action );
 	this.currentAction--;
 	this.updateUndoRedoState();
 };
@@ -230,7 +233,7 @@ ImageEditor.prototype.undo = function () {
  */
 ImageEditor.prototype.redo = function () {
 	var nextAction = this.actions[ this.currentAction + 1 ];
-	this.tools[ nextAction.name ].doAction( '#mwe-imageeditor-image', nextAction.action );
+	this.tools[ nextAction.name ].doAction( this.image, nextAction.action );
 	this.currentAction++;
 	this.updateUndoRedoState();
 };
@@ -347,14 +350,14 @@ ImageEditor.prototype.setupTool = function ( tool ) {
 		var action;
 		if ( tool.isInteractive ) {
 			editor.setInteractiveTool( true );
-			tool.getAction( editor.interactivePanel, '#mwe-imageeditor-image' )
+			tool.getAction( editor.image, editor.interactivePanel )
 				.done( function ( action ) {
 					editor.addAction( tool.name, action );
 				} ).always( function () {
 					editor.setInteractiveTool( false );
 				} );
 		} else {
-			action = tool.doAction( '#mwe-imageeditor-image' );
+			action = tool.doAction( editor.image );
 			editor.addAction( tool.name, action );
 		}
 
@@ -392,18 +395,13 @@ ImageEditor.prototype.registerCoreTools = function () {
 		title: 'Rotate counter clockwise' // TODO Localizable
 	} );
 	rotateCounterClockwise.doAction = function ( image ) {
-		Caman( image, function () {
-			this.rotate( -90 );
-			this.render();
-		} );
-
+		image.rotate( -90 );
+		image.render();
 		return {};
 	};
 	rotateCounterClockwise.undoAction = function ( image ) {
-		Caman( image, function () {
-			this.rotate( 90 );
-			this.render();
-		} );
+		image.rotate( 90 );
+		image.render();
 	};
 	this.registerTool( rotateCounterClockwise );
 
@@ -413,18 +411,13 @@ ImageEditor.prototype.registerCoreTools = function () {
 		title: 'Rotate clockwise'
 	} );
 	rotateClockwise.doAction = function ( image ) {
-		Caman( image, function () {
-			this.rotate( 90 );
-			this.render();
-		} );
-
+		image.rotate( 90 );
+		image.render();
 		return {};
 	};
 	rotateClockwise.undoAction = function ( image ) {
-		Caman( image, function () {
-			this.rotate( -90 );
-			this.render();
-		} );
+		image.rotate( -90 );
+		image.render();
 	};
 	this.registerTool( rotateClockwise );
 
@@ -434,18 +427,13 @@ ImageEditor.prototype.registerCoreTools = function () {
 		title: 'Flip vertical'
 	} );
 	flipVertical.doAction = function ( image ) {
-		Caman( image, function () {
-			this.flip( 'y' );
-			this.render();
-		} );
-
+		image.flip( 'y' );
+		image.render();
 		return {};
 	};
 	flipVertical.undoAction = function ( image ) {
-		Caman( image, function () {
-			this.flip( 'y' );
-			this.render();
-		} );
+		image.flip( 'y' );
+		image.render();
 	};
 	this.registerTool( flipVertical );
 
@@ -455,18 +443,13 @@ ImageEditor.prototype.registerCoreTools = function () {
 		title: 'Flip horizontal'
 	} );
 	flipHorizontal.doAction = function ( image ) {
-		Caman( image, function () {
-			this.flip( 'x' );
-			this.render();
-		} );
-
+		image.flip( 'x' );
+		image.render();
 		return {};
 	};
 	flipHorizontal.undoAction = function ( image ) {
-		Caman( image, function () {
-			this.flip( 'x' );
-			this.render();
-		} );
+		image.flip( 'x' );
+		image.render();
 	};
 	this.registerTool( flipHorizontal );
 
@@ -476,15 +459,6 @@ ImageEditor.prototype.registerCoreTools = function () {
 		title: 'Crop',
 		isInteractive: true
 	} );
-
-	crop.getAction = function ( panel, image ) {
-		this.deferred = $.Deferred();
-		this.panel = panel;
-		this.image = image;
-		this.setupInterface();
-
-		return this.deferred.promise();
-	};
 
 	crop.setupInterface = function () {
 		var controls;
@@ -530,22 +504,14 @@ ImageEditor.prototype.registerCoreTools = function () {
 	};
 
 	crop.doAction = function ( image, action ) {
-		var canvas, height, width, data;
-		canvas = $( image ).eq( 0 )[ 0 ];
-		height = canvas.height;
-		width = canvas.width;
-		data = canvas.getContext( '2d' ).getImageData( 0, 0, width, height );
-		action.oldImageData = data;
-		Caman( image, function () {
-			this.crop( action.width, action.height, action.x, action.y );
-			this.render();
-		} );
-
+		action.oldImageData = image.imageData;
+		image.crop( action.width, action.height, action.x, action.y );
+		image.render();
 		return action;
 	};
 
 	crop.undoAction = function ( image, action ) {
-		var canvas = $( image ).eq( 0 )[ 0 ];
+		var canvas = image.canvas;
 		canvas.height = action.oldImageData.height;
 		canvas.width = action.oldImageData.width;
 		canvas.getContext( '2d' ).putImageData(	action.oldImageData, 0, 0 );

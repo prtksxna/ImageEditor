@@ -35,7 +35,8 @@ OO.initClass( ImageTool );
  *
  * @abstract
  * @method doAction
- * @param {string} image Selector to pass to Caman
+ * @param {Caman} image Caman image object to be maupilated.
+ * @param {Object} [action] Passed when action is being re-done.
  * @return {Object} action Returns an action object to be saved by the
  * editor. This action should have data required by the tool to undo
  * its action.
@@ -48,10 +49,18 @@ ImageTool.prototype.doAction = null;
  *
  * @abstract
  * @method undoAction
- * @param {string} image Selector to pass to Caman
- * @param {Object} action Object required by the tool to undo its action.
+ * @param {Caman} image Caman image object to be maupilated.
+ * @param {Object} action Passes previously saved action data to undo.
  */
 ImageTool.prototype.undoAction = null;
+
+ImageTool.prototype.getAction = function ( image, panel ) {
+	this.deferred = $.Deferred();
+	this.image = image;
+	this.panel = panel;
+	this.setupInterface();
+	return this.deferred.promise();
+}
 
 window.ImageTool = ImageTool;
 
