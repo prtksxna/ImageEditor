@@ -25,6 +25,7 @@
     "test": "npm run lint && npm run cc",
     "docs": "jsduck resources --output docs",
     "build": "npm run concat && npm run uglify",
-    "prebuild": "npm run test"
+    "prebuild": "npm run test",
+    "push-to-gh-pages": "git stash && git checkout -b gh-pages && rm -f .gitignore && npm install && npm run docs && git add --all && git commit -m 'push to gh-pages' && git push origin gh-pages --force && git checkout master && git branch -D gh-pages"
   }
 }
