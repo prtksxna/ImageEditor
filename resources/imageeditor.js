@@ -13,6 +13,7 @@ var ImageEditor;
  *         containerId: 'editor',
  *         imagePath: 'cat.png'
  *     } );
+ *     // Register any new tools here
  *     e.initialize();
  *
  * @cfg {string} containerId DOM ID of the containter in which the
@@ -57,7 +58,10 @@ ImageEditor = function ( config ) {
 	} );
 	this.editor.$element.append( this.toolbar.$element );
 
-	// Interactive panel
+	/**
+	 * @property {OO.ui.PanelLayout} interactivePanel The panel
+	 * passed to interactive tools to render additional UI.
+	 */
 	this.interactivePanel = new OO.ui.PanelLayout( {
 		expanded: false,
 		framed: true,
