@@ -389,7 +389,7 @@ ImageEditor.prototype.registerTool = function ( tool ) {
 ImageEditor.prototype.registerCoreTools = function () {
 	var rotateCounterClockwise, rotateClockwise, flipVertical, flipHorizontal, crop;
 
-	rotateCounterClockwise = new ImageTool(  {
+	rotateCounterClockwise = new ImageTool( {
 		name: 'rotateCounterClockwise',
 		icon: 'rotate-counter-clockwise',
 		title: 'Rotate counter clockwise' // TODO Localizable
@@ -405,7 +405,7 @@ ImageEditor.prototype.registerCoreTools = function () {
 	};
 	this.registerTool( rotateCounterClockwise );
 
-	rotateClockwise = new ImageTool(  {
+	rotateClockwise = new ImageTool( {
 		name: 'rotateClockwise',
 		icon: 'rotate-clockwise',
 		title: 'Rotate clockwise'
@@ -460,7 +460,7 @@ ImageEditor.prototype.registerCoreTools = function () {
 		isInteractive: true
 	} );
 
-	crop.setupInterface = function () {
+	crop.setupInterface = function ( image, panel ) {
 		var controls;
 
 		this.widthInput = new OO.ui.TextInputWidget( { value: 20 } );
@@ -483,7 +483,7 @@ ImageEditor.prototype.registerCoreTools = function () {
 				x: this.xInput.getValue(),
 				y: this.yInput.getValue()
 			};
-			this.deferred.resolve( this.doAction( this.image, action ) );
+			this.deferred.resolve( this.doAction( image, action ) );
 		}.bind( this ) );
 
 		this.cancel.on( 'click', function () {
@@ -500,7 +500,7 @@ ImageEditor.prototype.registerCoreTools = function () {
 				this.cancel
 			]
 		} );
-		this.panel.$element.append( controls.$element );
+		panel.$element.append( controls.$element );
 	};
 
 	crop.doAction = function ( image, action ) {
