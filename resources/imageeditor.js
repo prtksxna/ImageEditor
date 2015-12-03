@@ -58,7 +58,6 @@ ImageEditor = function ( config ) {
 	} );
 	this.editor.$element.append( this.toolbar.$element );
 
-
 	/**
 	 * @private
 	 * @property {Caman} image Caman image object
@@ -168,10 +167,10 @@ ImageEditor.prototype.getImageData = function () {
 	return this.image.pixelData;
 };
 
-
 /**
- * @private
  * Setups up the toolbar.
+ *
+ * @private
  */
 ImageEditor.prototype.setupToolbar = function () {
 	var editor =  this;
@@ -249,9 +248,10 @@ ImageEditor.prototype.addAction = function ( name, action ) {
 };
 
 /**
- * @private
  * Updates the state of the undo and redo buttons based on
  * {@link #property-currentAction}.
+ *
+ * @private
  */
 ImageEditor.prototype.updateUndoRedoState = function () {
 	this.isUndoable = ( this.currentAction >= 0 );
@@ -260,8 +260,9 @@ ImageEditor.prototype.updateUndoRedoState = function () {
 };
 
 /**
- * @private
  * Undos last action
+ *
+ * @private
  */
 ImageEditor.prototype.undo = function () {
 	var lastAction = this.actions[ this.currentAction ];
@@ -271,8 +272,9 @@ ImageEditor.prototype.undo = function () {
 };
 
 /**
- * @private
  * Redos last action
+ *
+ * @private
  */
 ImageEditor.prototype.redo = function () {
 	var nextAction = this.actions[ this.currentAction + 1 ];
@@ -282,8 +284,9 @@ ImageEditor.prototype.redo = function () {
 };
 
 /**
- * @private
  * Sets up the undo and redo buttons in the toolbar
+ *
+ * @private
  */
 ImageEditor.prototype.setupUndoRedo = function () {
 	var editor =  this;
@@ -369,8 +372,9 @@ ImageEditor.prototype.getInteractiveTool = function () {
 };
 
 /**
- * @private
  * Reads list of registered tools and sets them up with the toolbar.
+ *
+ * @private
  */
 ImageEditor.prototype.setupTools = function () {
 	$.each( this.tools, function ( tool ) {
@@ -379,8 +383,9 @@ ImageEditor.prototype.setupTools = function () {
 };
 
 /**
- * @private
  * Sets up an instance of ImageTool with the toolbar.
+ *
+ * @private
  */
 ImageEditor.prototype.setupTool = function ( tool ) {
 	var editor = this;
@@ -432,8 +437,9 @@ ImageEditor.prototype.registerTool = function ( tool ) {
 };
 
 /**
- * @private
  * Instantiate and register core tools with the editor
+ *
+ * @private
  */
 ImageEditor.prototype.registerCoreTools = function () {
 	var rotateCounterClockwise, rotateClockwise, flipVertical, flipHorizontal, crop;
