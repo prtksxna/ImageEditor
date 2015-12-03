@@ -3,7 +3,7 @@
 $( function () {
 	var e = new ImageEditor( {
 		containerId: 'editor',
-		imagePath: 'cat.png'
+		imagePath: 'flower.jpg'
 	} );
 	e.initialize();
 } );
