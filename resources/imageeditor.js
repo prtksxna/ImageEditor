@@ -26,6 +26,9 @@ ImageEditor = function ( config ) {
 		throw new Error( 'All config not passed' );
 	}
 
+	// Mixin constructors
+	OO.EventEmitter.call( this );
+
 	// Setup container
 	this.$container = $( '#' + config.containerId );
 	this.$container
@@ -141,6 +144,13 @@ ImageEditor = function ( config ) {
 };
 
 OO.initClass( ImageEditor );
+OO.mixinClass( ImageEditor, OO.EventEmitter );
+
+/**
+ * @event save
+ * Fired when the save button is clicked
+ * @param {Uint8ClampedArray} imageData
+ */
 
 /**
  * Initializes the editor.
@@ -152,10 +162,20 @@ ImageEditor.prototype.initialize = function () {
 };
 
 /**
+ * Getter method for current image's pixel data.
+ */
+ImageEditor.prototype.getImageData = function () {
+	return this.image.pixelData;
+};
+
+
+/**
  * @private
  * Setups up the toolbar.
  */
 ImageEditor.prototype.setupToolbar = function () {
+	var editor =  this;
+
 	this.registerCoreTools();
 	this.setupUndoRedo();
 	this.setupTools();
@@ -166,6 +186,8 @@ ImageEditor.prototype.setupToolbar = function () {
 	this.saveButton = new OO.ui.ButtonWidget( {
 		label: 'Save',
 		flags: [ 'constructive', 'primary' ]
+	} ).on( 'click', function () {
+		editor.emit( 'save', editor.image.pixelData );
 	} );
 
 	// Refresh the undo redo states
