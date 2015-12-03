@@ -538,7 +538,9 @@ ImageEditor.prototype.registerCoreTools = function () {
 				x: this.xInput.getValue(),
 				y: this.yInput.getValue()
 			};
-			this.deferred.resolve( this.doAction( image, action ) );
+			action.oldImageData = image.imageData;
+			this.doAction( image, action );
+			this.deferred.resolve( action );
 		}.bind( this ) );
 
 		this.cancel.on( 'click', function () {
@@ -559,7 +561,6 @@ ImageEditor.prototype.registerCoreTools = function () {
 	};
 
 	crop.doAction = function ( image, action ) {
-		action.oldImageData = image.imageData;
 		image.crop( action.width, action.height, action.x, action.y );
 		image.render();
 		return action;
