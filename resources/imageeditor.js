@@ -40,9 +40,6 @@ ImageEditor = function ( config ) {
 				)
 		);
 
-	this.image = Caman( '#mwe-imageeditor-image' );
-	window.k = this.image;
-
 	// Editor
 	this.editor = new OO.ui.PanelLayout( {
 		framed: true,
@@ -58,7 +55,15 @@ ImageEditor = function ( config ) {
 	} );
 	this.editor.$element.append( this.toolbar.$element );
 
+
 	/**
+	 * @private
+	 * @property {Caman} image Caman image object
+	 */
+	this.image = Caman( '#mwe-imageeditor-image' );
+
+	/**
+	 * @private
 	 * @property {OO.ui.PanelLayout} interactivePanel The panel
 	 * passed to interactive tools to render additional UI.
 	 */
@@ -72,6 +77,7 @@ ImageEditor = function ( config ) {
 	this.editor.$element.append( this.interactivePanel.$element );
 
 	/**
+	 * @private
 	 * @property {Array} toolbarGroups The groups config passed to the
 	 * [toolbar's
 	 * setup](https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Toolbar-method-setup)
@@ -97,32 +103,38 @@ ImageEditor = function ( config ) {
 	];
 
 	/**
+	 * @private
 	 * @property {Object} tools Instances of ImageTools registered with the ImageEditor
 	 */
 	this.tools = {};
 
 	/**
+	 * @private
 	 * @property {Array} actions Actions taken so far.
 	 */
 	this.actions = [];
 
 	/**
+	 * @private
 	 * @property {number} currentAction Current action as an index
 	 * of the {@link #property-actions} array.
 	 */
 	this.currentAction = undefined;
 
 	/**
+	 * @private
 	 * @property {boolean} isUndoable Is the editor undoable?
 	 */
 	this.isUndoable = false;
 
 	/**
+	 * @private
 	 * @property {boolean} isRedoable Is the editor redoable?
 	 */
 	this.isRedoable = false;
 
 	/**
+	 * @private
 	 * @property {boolean} interactiveTool Is an interactive tool currently active?
 	 */
 	this.interactiveTool = false;
@@ -140,6 +152,7 @@ ImageEditor.prototype.initialize = function () {
 };
 
 /**
+ * @private
  * Setups up the toolbar.
  */
 ImageEditor.prototype.setupToolbar = function () {
@@ -185,6 +198,7 @@ ImageEditor.prototype.getToolbarGroups = function () {
  * Pushes to {@link #property-actions}, updates {@link
  * #property-currentAction}, and calls {@link #updateUndoRedoState}.
  *
+ * @private
  * @param {string} name
  * @param {Object} action
  */
@@ -213,6 +227,7 @@ ImageEditor.prototype.addAction = function ( name, action ) {
 };
 
 /**
+ * @private
  * Updates the state of the undo and redo buttons based on
  * {@link #property-currentAction}.
  */
@@ -223,6 +238,7 @@ ImageEditor.prototype.updateUndoRedoState = function () {
 };
 
 /**
+ * @private
  * Undos last action
  */
 ImageEditor.prototype.undo = function () {
@@ -233,6 +249,7 @@ ImageEditor.prototype.undo = function () {
 };
 
 /**
+ * @private
  * Redos last action
  */
 ImageEditor.prototype.redo = function () {
@@ -243,6 +260,7 @@ ImageEditor.prototype.redo = function () {
 };
 
 /**
+ * @private
  * Sets up the undo and redo buttons in the toolbar
  */
 ImageEditor.prototype.setupUndoRedo = function () {
@@ -306,6 +324,7 @@ ImageEditor.prototype.setupUndoRedo = function () {
 /**
  * Setter method for {@link #property-interactiveTool}.
  *
+ * @private
  * @param {boolean} value
  * @return {boolean}
  */
@@ -320,6 +339,7 @@ ImageEditor.prototype.setInteractiveTool = function ( value ) {
 /**
  * Getter method for {@link #property-interactiveTool}.
  *
+ * @private
  * @return {boolean}
  */
 ImageEditor.prototype.getInteractiveTool = function () {
@@ -327,6 +347,7 @@ ImageEditor.prototype.getInteractiveTool = function () {
 };
 
 /**
+ * @private
  * Reads list of registered tools and sets them up with the toolbar.
  */
 ImageEditor.prototype.setupTools = function () {
@@ -336,6 +357,7 @@ ImageEditor.prototype.setupTools = function () {
 };
 
 /**
+ * @private
  * Sets up an instance of ImageTool with the toolbar.
  */
 ImageEditor.prototype.setupTool = function ( tool ) {
@@ -388,6 +410,7 @@ ImageEditor.prototype.registerTool = function ( tool ) {
 };
 
 /**
+ * @private
  * Instantiate and register core tools with the editor
  */
 ImageEditor.prototype.registerCoreTools = function () {
