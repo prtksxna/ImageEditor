@@ -63,3 +63,25 @@ html, body {
 .oo-ui-icon-crop {
 	background-image: url( icons/crop.svg );
 }
+
+
+/** Crop UI **/
+.crop-cover {
+	position: absolute;
+	background: rgba( 0, 0, 0, 0.5 );
+}
+
+.crop-cover canvas {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+}
+
+.crop-rect {
+	box-sizing: border-box;
+	border: 2px dashed gray;
+	position: relative;
+	width: 100px;
+	height: 100px;
+	background-color: rgba( 0, 0, 0, 0 );
+}

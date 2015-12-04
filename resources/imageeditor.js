@@ -518,10 +518,10 @@ ImageEditor.prototype.registerCoreTools = function () {
 	crop.setupInterface = function ( image, panel ) {
 		var controls;
 
-		this.widthInput = new OO.ui.TextInputWidget( { value: 20 } );
-		this.heightInput = new OO.ui.TextInputWidget( { value: 20 } );
-		this.xInput = new OO.ui.TextInputWidget( { value: 0 } );
-		this.yInput = new OO.ui.TextInputWidget( { value: 0 } );
+		this.widthInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.heightInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.xInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.yInput = new OO.ui.TextInputWidget( { disabled: true } );
 		this.crop = new OO.ui.ButtonWidget( {
 			label: 'Crop',
 			flags: [ 'primary', 'progressive' ]
@@ -541,6 +541,9 @@ ImageEditor.prototype.registerCoreTools = function () {
 			action.oldImageData = image.imageData;
 			this.doAction( image, action );
 			this.deferred.resolve( action );
+
+			this.$cover.remove();
+			this.$cropRect.remove();
 		}.bind( this ) );
 
 		this.cancel.on( 'click', function () {
@@ -558,7 +561,82 @@ ImageEditor.prototype.registerCoreTools = function () {
 			]
 		} );
 		panel.$element.append( controls.$element );
+
+		this.drawCropTool( image );
 	};
+
+	crop.drawCropTool = function ( image ) {
+		this.$canvas = $( image.canvas );
+		this.xRatio = this.$canvas[ 0 ].width / ( this.$canvas.width() * 1.0 );
+		this.yRatio = this.$canvas[ 0 ].height / ( this.$canvas.height() * 1.0 );
+
+		// Gray out the image
+		this.$cover = $( '<div>' )
+			.addClass( 'crop-cover' )
+			.appendTo( 'body' )
+			.css( {
+				'top': this.$canvas.offset().top,
+				'left': this.$canvas.offset().left,
+				'width': this.$canvas.width(),
+				'height': this.$canvas.height()
+			} )
+
+		// Canvas clone
+		this.$canvasClone = this.$canvas.clone().attr( 'id', '' );
+		this.$canvasClone.appendTo( this.$cover );
+		this.$canvasClone[0].getContext( '2d' ).putImageData( image.imageData, 0, 0 );
+
+		// Cropping rectangle
+		this.$cropRect = $( '<div>' )
+			.addClass( 'crop-rect' )
+			.appendTo( this.$cover );
+		this.$cropRect
+			.resizable( {
+				handles: 'all',
+				containment: 'parent'
+			} )
+			.draggable( {
+				containment: 'parent'
+			} );
+
+		// Use cropping rectanble bounds to show part of
+		// the image and update text boxes
+		this.$cropRect.on( 'drag resize', function () {
+			this.translateCropToCanvas();
+		}.bind( this ) )
+		this.translateCropToCanvas();
+	};
+
+	crop.translateCropToCanvas = function () {
+		var
+			pos = this.$cropRect.position(),
+			left = pos.left,
+			top = pos.top,
+			width = parseFloat( this.$cropRect.css( 'width' ) ),
+			height = parseFloat( this.$cropRect.css( 'height' ) ),
+			polygonPoints = '' +
+				// Top left
+				left + 'px ' +
+				top + 'px, ' +
+				// Top Right
+				( left + width ) + 'px ' +
+				top  + 'px, ' +
+				// Bottom Right
+				( left + width ) + 'px ' +
+				( top + height )  + 'px, ' +
+				// Bottom Left
+				left + 'px ' +
+				( top + height )  + 'px';
+
+		// Clip cloned canvas
+		this.$canvasClone.css( '-webkit-clip-path',  'polygon(' + polygonPoints + ' )' );
+
+		// Update inputs with crop values
+		this.widthInput.setValue( width * this.xRatio);
+		this.heightInput.setValue( height * this.yRatio );
+		this.xInput.setValue( left * this.xRatio );
+		this.yInput.setValue( top * this.yRatio );
+	}
 
 	crop.doAction = function ( image, action ) {
 		image.crop( action.width, action.height, action.x, action.y );
