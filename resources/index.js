@@ -1,11 +1,16 @@
 ( function ( $, OO, ImageEditor ) {
 
 $( function () {
-	var e = new ImageEditor( {
-		containerId: 'editor',
-		imagePath: 'flower.jpg'
+	$( '#demo_images a' ).on( 'click', function ( e ) {
+		var e = new ImageEditor( {
+			containerId: 'editor',
+			imagePath: $( this ).attr( 'href' )
+		} );
+		e.initialize();
+		$( '#demo_images' ).remove();
+		return false;
 	} );
-	e.initialize();
+
 } );
 
 }( jQuery, OO, ImageEditor ) );
