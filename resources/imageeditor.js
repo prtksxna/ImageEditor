@@ -581,16 +581,16 @@ ImageEditor.prototype.registerCoreTools = function () {
 			.addClass( 'crop-cover' )
 			.appendTo( 'body' )
 			.css( {
-				'top': this.$canvas.offset().top,
-				'left': this.$canvas.offset().left,
-				'width': this.$canvas.width(),
-				'height': this.$canvas.height()
-			} )
+				top: this.$canvas.offset().top,
+				left: this.$canvas.offset().left,
+				width: this.$canvas.width(),
+				height: this.$canvas.height()
+			} );
 
 		// Canvas clone
 		this.$canvasClone = this.$canvas.clone().attr( 'id', '' );
 		this.$canvasClone.appendTo( this.$cover );
-		this.$canvasClone[0].getContext( '2d' ).putImageData( image.imageData, 0, 0 );
+		this.$canvasClone[ 0 ].getContext( '2d' ).putImageData( image.imageData, 0, 0 );
 
 		// Cropping rectangle
 		this.$cropRect = $( '<div>' )
@@ -609,7 +609,7 @@ ImageEditor.prototype.registerCoreTools = function () {
 		// the image and update text boxes
 		this.$cropRect.on( 'drag resize', function () {
 			this.translateCropToCanvas();
-		}.bind( this ) )
+		}.bind( this ) );
 		this.translateCropToCanvas();
 	};
 
@@ -620,9 +620,7 @@ ImageEditor.prototype.registerCoreTools = function () {
 			top = pos.top,
 			width = parseFloat( this.$cropRect.css( 'width' ) ),
 			height = parseFloat( this.$cropRect.css( 'height' ) ),
-			polygonPoints = '' +
-				// Top left
-				left + 'px ' +
+			polygonPoints = left + 'px ' + // Top left
 				top + 'px, ' +
 				// Top Right
 				( left + width ) + 'px ' +
@@ -638,11 +636,11 @@ ImageEditor.prototype.registerCoreTools = function () {
 		this.$canvasClone.css( '-webkit-clip-path',  'polygon(' + polygonPoints + ' )' );
 
 		// Update inputs with crop values
-		this.widthInput.setValue( width * this.xRatio);
+		this.widthInput.setValue( width * this.xRatio );
 		this.heightInput.setValue( height * this.yRatio );
 		this.xInput.setValue( left * this.xRatio );
 		this.yInput.setValue( top * this.yRatio );
-	}
+	};
 
 	crop.doAction = function ( image, action ) {
 		image.crop( action.width, action.height, action.x, action.y );
