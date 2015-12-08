@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">html, body {
+	margin: 0;
+	height: 100%;
+	font-family: sans-serif;
+}
+
+.mwe-imageeditor-editor {
+	background: #262626;
+	height: 100%;
+}
+
+.mwe-imageeditor-canvas-container {
+	position: relative;
+	height: 100%;
+}
+
+.mwe-imageeditor-canvas-container img,
+.mwe-imageeditor-canvas-container canvas {
+	max-width: 70%;
+	max-height: 70%;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.mwe-imageeditor-interactivepanel {
+	margin-top: 0 !important;
+	border-top: none;
+	border-radius: 0;
+	background: #fff;
+}
+
+.mwe-imageeditor-interactivepanel .oo-ui-textInputWidget {
+	width: auto;
+}
+
+/* Icons */
+.oo-ui-icon-undo {
+	background-image: url( icons/undo.svg );
+}
+
+.oo-ui-icon-redo {
+	background-image: url( icons/redo.svg );
+}
+
+.oo-ui-icon-rotate-clockwise {
+	background-image: url( icons/rotate-clockwise.svg );
+}
+
+.oo-ui-icon-rotate-counter-clockwise {
+	background-image: url( icons/rotate-counter-clockwise.svg );
+}
+
+.oo-ui-icon-flip-vertical {
+	background-image: url( icons/flip-vertical.svg );
+}
+
+.oo-ui-icon-flip-horizontal {
+	background-image: url( icons/flip-horizontal.svg );
+}
+
+.oo-ui-icon-crop {
+	background-image: url( icons/crop.svg );
+}
+
+
+<span id='global-property-'>/** Crop UI **/
+</span>.crop-cover {
+	position: absolute;
+	background: rgba( 0, 0, 0, 0.5 );
+}
+
+.crop-cover canvas {
+	height: 100%;
+	width: 100%;
+	position: absolute;
+}
+
+.crop-rect {
+	box-sizing: border-box;
+	border: 2px dashed gray;
+	position: relative;
+	width: 100px;
+	height: 100px;
+	background-color: rgba( 0, 0, 0, 0 );
+}</pre>
+</body>
+</html>

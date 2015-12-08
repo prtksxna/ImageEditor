@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">( function ( $, OO, ImageTool, Caman ) {
+
+var ImageEditor;
+
+<span id='ImageEditor-cfg-imagePath'><span id='ImageEditor-cfg-containerId'><span id='ImageEditor'>/**
+</span></span></span> * @class ImageEditor
+ *
+ * ImageEditor is a user interface that allows making edits to
+ * images. It uses OO.ui.Toolbar and OO.ui.PanelLayout for the basic
+ * UI, and Caman for image editing.
+ *
+ *     var e = new ImageEditor( {
+ *         containerId: &#39;editor&#39;,
+ *         imagePath: &#39;cat.png&#39;
+ *     } );
+ *     // Register any new tools here
+ *     e.initialize();
+ *
+ * @cfg {string} containerId DOM ID of the containter in which the
+ * editor will be rendered.
+ * @cfg {string} imagePath Path of the image to load in the editor.
+ */
+ImageEditor = function ( config ) {
+
+	if ( config.containerId === undefined || config.imagePath === undefined ) {
+		throw new Error( &#39;All config not passed&#39; );
+	}
+
+	// Mixin constructors
+	OO.EventEmitter.call( this );
+
+	// Setup container
+	this.$container = $( &#39;#&#39; + config.containerId );
+	this.$container
+		.addClass( &#39;mwe-imageeditor-editor&#39; )
+		.append(
+			$( &#39;&lt;div&gt;&#39; )
+				.addClass( &#39;mwe-imageeditor-canvas-container&#39; )
+				.append(
+					$( &#39;&lt;img&gt;&#39; )
+						.attr( &#39;src&#39;, config.imagePath )
+						.attr( &#39;id&#39;, &#39;mwe-imageeditor-image&#39; )
+				)
+		);
+
+	// Editor
+	this.editor = new OO.ui.PanelLayout( {
+		framed: true,
+		padded: false
+	} );
+	this.$container.append( this.editor.$element );
+
+	// Toolbar
+	this.toolFactory = new OO.ui.ToolFactory();
+	this.toolGroupFactory = new OO.ui.ToolGroupFactory();
+	this.toolbar = new OO.ui.Toolbar( this.toolFactory, this.toolGroupFactory, {
+		actions: true
+	} );
+	this.editor.$element.append( this.toolbar.$element );
+
+<span id='ImageEditor-property-image'>	/**
+</span>	 * @private
+	 * @property {Caman} image Caman image object
+	 */
+	this.image = Caman( &#39;#mwe-imageeditor-image&#39; );
+
+<span id='ImageEditor-property-interactivePanel'>	/**
+</span>	 * @private
+	 * @property {OO.ui.PanelLayout} interactivePanel The panel
+	 * passed to interactive tools to render additional UI.
+	 */
+	this.interactivePanel = new OO.ui.PanelLayout( {
+		expanded: false,
+		framed: true,
+		padded: true,
+		classes: [ &#39;mwe-imageeditor-interactivepanel&#39; ]
+	} );
+	this.interactivePanel.toggle( false );
+	this.editor.$element.append( this.interactivePanel.$element );
+
+<span id='ImageEditor-property-toolbarGroups'>	/**
+</span>	 * @private
+	 * @property {Array} toolbarGroups The groups config passed to the
+	 * [toolbar&#39;s
+	 * setup](https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Toolbar-method-setup)
+	 * method.
+	 */
+	this.toolbarGroups = [
+		{
+			type: &#39;bar&#39;,
+			include: [ &#39;undo&#39;, &#39;redo&#39; ]
+		},
+		{
+			type: &#39;bar&#39;,
+			include: [ &#39;rotateCounterClockwise&#39;, &#39;rotateClockwise&#39; ]
+		},
+		{
+			type: &#39;bar&#39;,
+			include: [ &#39;flipVertical&#39;, &#39;flipHorizontal&#39; ]
+		},
+		{
+			type: &#39;bar&#39;,
+			include: [ &#39;crop&#39; ]
+		}
+	];
+
+<span id='ImageEditor-property-tools'>	/**
+</span>	 * @private
+	 * @property {Object} tools Instances of ImageTools registered with the ImageEditor
+	 */
+	this.tools = {};
+
+<span id='ImageEditor-property-actions'>	/**
+</span>	 * @private
+	 * @property {Array} actions Actions taken so far.
+	 */
+	this.actions = [];
+
+<span id='ImageEditor-property-currentAction'>	/**
+</span>	 * @private
+	 * @property {number} currentAction Current action as an index
+	 * of the {@link #property-actions} array.
+	 */
+	this.currentAction = undefined;
+
+<span id='ImageEditor-property-isUndoable'>	/**
+</span>	 * @private
+	 * @property {boolean} isUndoable Is the editor undoable?
+	 */
+	this.isUndoable = false;
+
+<span id='ImageEditor-property-isRedoable'>	/**
+</span>	 * @private
+	 * @property {boolean} isRedoable Is the editor redoable?
+	 */
+	this.isRedoable = false;
+
+<span id='ImageEditor-property-interactiveTool'>	/**
+</span>	 * @private
+	 * @property {boolean} interactiveTool Is an interactive tool currently active?
+	 */
+	this.interactiveTool = false;
+};
+
+OO.initClass( ImageEditor );
+OO.mixinClass( ImageEditor, OO.EventEmitter );
+
+<span id='ImageEditor-event-save'>/**
+</span> * @event save
+ * Fired when the save button is clicked
+ * @param {Uint8ClampedArray} imageData
+ */
+
+<span id='ImageEditor-method-initialize'>/**
+</span> * Initializes the editor.
+ */
+ImageEditor.prototype.initialize = function () {
+	this.setupToolbar();
+
+	// TODO Stuff about the editor&#39;s state
+};
+
+<span id='ImageEditor-method-getImageData'>/**
+</span> * Getter method for current image&#39;s pixel data.
+ */
+ImageEditor.prototype.getImageData = function () {
+	return this.image.pixelData;
+};
+
+<span id='ImageEditor-method-setupToolbar'>/**
+</span> * Setups up the toolbar.
+ *
+ * @private
+ */
+ImageEditor.prototype.setupToolbar = function () {
+	var editor =  this;
+
+	this.registerCoreTools();
+	this.setupUndoRedo();
+	this.setupTools();
+
+	// Setup toolbar
+	this.toolbar.setup( this.getToolbarGroups() );
+
+	this.saveButton = new OO.ui.ButtonWidget( {
+		label: &#39;Save&#39;,
+		flags: [ &#39;constructive&#39;, &#39;primary&#39; ]
+	} ).on( &#39;click&#39;, function () {
+		editor.emit( &#39;save&#39;, editor.image.pixelData );
+
+		// TODO Only for testing
+		editor.image.browserSave( &#39;jpg&#39; );
+	} );
+
+	// Refresh the undo redo states
+	this.toolbar.emit( &#39;updateState&#39; );
+
+	this.toolbar.$actions.append( this.saveButton.$element );
+	// TODO There has to be a more elegant way to do this.
+	this.$container.css( { &#39;margin-top&#39;: this.toolbar.$element.height() + &#39;px&#39; } );
+};
+
+<span id='ImageEditor-method-setToolbarGroups'>/**
+</span> * Setter method for {@link #property-toolbarGroups}.
+ *
+ * @param {Object} groups
+ * @return {Object}
+ */
+ImageEditor.prototype.setToolbarGroups = function ( groups ) {
+	this.toolbarGroups = groups;
+	return this.toolbarGroups;
+};
+
+<span id='ImageEditor-method-getToolbarGroups'>/**
+</span> * Getter method for {@link #property-toolbarGroups}.
+ *
+ * @return {Object}
+ */
+ImageEditor.prototype.getToolbarGroups = function () {
+	return this.toolbarGroups;
+};
+
+<span id='ImageEditor-method-addAction'>/**
+</span> * Pushes to {@link #property-actions}, updates {@link
+ * #property-currentAction}, and calls {@link #updateUndoRedoState}.
+ *
+ * @private
+ * @param {string} name
+ * @param {Object} action
+ */
+ImageEditor.prototype.addAction = function ( name, action ) {
+	// The current action is being made over the latest action
+	if (
+		this.currentAction === undefined ||
+		this.currentAction === this.actions.length - 1
+	) {
+		this.actions.push( {
+			name: name,
+			action: action
+		} );
+
+		this.currentAction = this.actions.length - 1;
+	} else {
+		this.actions = this.actions.slice( 0, this.currentAction + 1 );
+		this.actions.push( {
+			name: name,
+			action: action
+		} );
+
+		this.currentAction = this.actions.length - 1;
+	}
+	this.updateUndoRedoState();
+};
+
+<span id='ImageEditor-method-updateUndoRedoState'>/**
+</span> * Updates the state of the undo and redo buttons based on
+ * {@link #property-currentAction}.
+ *
+ * @private
+ */
+ImageEditor.prototype.updateUndoRedoState = function () {
+	this.isUndoable = ( this.currentAction &gt;= 0 );
+	this.isRedoable = ( this.currentAction !== this.actions.length - 1 );
+	this.toolbar.emit( &#39;updateState&#39; );
+};
+
+<span id='ImageEditor-method-undo'>/**
+</span> * Undos last action
+ *
+ * @private
+ */
+ImageEditor.prototype.undo = function () {
+	var lastAction = this.actions[ this.currentAction ];
+	this.tools[ lastAction.name ].undoAction( this.image, lastAction.action );
+	this.currentAction--;
+	this.updateUndoRedoState();
+};
+
+<span id='ImageEditor-method-redo'>/**
+</span> * Redos last action
+ *
+ * @private
+ */
+ImageEditor.prototype.redo = function () {
+	var nextAction = this.actions[ this.currentAction + 1 ];
+	this.tools[ nextAction.name ].doAction( this.image, nextAction.action );
+	this.currentAction++;
+	this.updateUndoRedoState();
+};
+
+<span id='ImageEditor-method-setupUndoRedo'>/**
+</span> * Sets up the undo and redo buttons in the toolbar
+ *
+ * @private
+ */
+ImageEditor.prototype.setupUndoRedo = function () {
+	var editor =  this;
+
+	// Undo
+	function UndoTool() {
+		UndoTool.super.apply( this, arguments );
+	}
+
+	OO.inheritClass( UndoTool, OO.ui.Tool );
+
+	UndoTool.static.name = &#39;undo&#39;;
+	UndoTool.static.icon = &#39;undo&#39;;
+	UndoTool.static.title = &#39;Undo&#39;;
+
+	UndoTool.prototype.onSelect = function () {
+		editor.undo();
+		this.setActive( false );
+	};
+
+	UndoTool.prototype.onUpdateState = function () {
+		if ( editor.isUndoable &amp;&amp; !editor.getInteractiveTool() ) {
+			this.setDisabled( false );
+		} else {
+			this.setDisabled( true );
+		}
+		this.setActive( false );
+	};
+
+	this.toolFactory.register( UndoTool );
+
+	// Redo
+	function RedoTool() {
+		RedoTool.super.apply( this, arguments );
+	}
+
+	OO.inheritClass( RedoTool, OO.ui.Tool );
+
+	RedoTool.static.name = &#39;redo&#39;;
+	RedoTool.static.icon = &#39;redo&#39;;
+	RedoTool.static.title = &#39;Redo&#39;;
+
+	RedoTool.prototype.onSelect = function () {
+		editor.redo();
+		this.setActive( false );
+	};
+
+	RedoTool.prototype.onUpdateState = function () {
+		if ( editor.isRedoable &amp;&amp; !editor.getInteractiveTool() ) {
+			this.setDisabled( false );
+		} else {
+			this.setDisabled( true );
+		}
+		this.setActive( false );
+	};
+
+	this.toolFactory.register( RedoTool );
+};
+
+<span id='ImageEditor-method-setInteractiveTool'>/**
+</span> * Setter method for {@link #property-interactiveTool}.
+ *
+ * @private
+ * @param {boolean} value
+ * @return {boolean}
+ */
+ImageEditor.prototype.setInteractiveTool = function ( value ) {
+	this.interactiveTool = value;
+	this.interactivePanel.$element.empty();
+	this.interactivePanel.toggle( value );
+	this.toolbar.emit( &#39;updateState&#39; );
+	return this.interactiveTool;
+};
+
+<span id='ImageEditor-method-getInteractiveTool'>/**
+</span> * Getter method for {@link #property-interactiveTool}.
+ *
+ * @private
+ * @return {boolean}
+ */
+ImageEditor.prototype.getInteractiveTool = function () {
+	return this.interactiveTool;
+};
+
+<span id='ImageEditor-method-setupTools'>/**
+</span> * Reads list of registered tools and sets them up with the toolbar.
+ *
+ * @private
+ */
+ImageEditor.prototype.setupTools = function () {
+	$.each( this.tools, function ( tool ) {
+		this.setupTool( this.tools[ tool ] );
+	}.bind( this ) );
+};
+
+<span id='ImageEditor-method-setupTool'>/**
+</span> * Sets up an instance of ImageTool with the toolbar.
+ *
+ * @private
+ */
+ImageEditor.prototype.setupTool = function ( tool ) {
+	var editor = this;
+
+	function Tool() {
+		Tool.super.apply( this, arguments );
+	}
+	OO.inheritClass( Tool, OO.ui.Tool );
+
+	Tool.static.name = tool.name;
+	Tool.static.icon = tool.icon;
+	Tool.static.title = tool.title;
+
+	Tool.prototype.onSelect = function () {
+		var action, then, now;
+		if ( tool.isInteractive ) {
+			editor.setInteractiveTool( true );
+			tool.getAction( editor.image, editor.interactivePanel )
+				.done( function ( action ) {
+					editor.addAction( tool.name, action );
+				} ).always( function () {
+					editor.setInteractiveTool( false );
+				} );
+
+		} else {
+			then = new Date();
+			action = tool.doAction( editor.image );
+			now = new Date();
+			console.log( tool.name, &#39;took&#39;, now - then, &#39;ms&#39; );
+			editor.addAction( tool.name, action );
+		}
+
+		this.setActive( false );
+	};
+
+	Tool.prototype.onUpdateState = function () {
+		if ( editor.getInteractiveTool() ) {
+			this.setDisabled( true );
+		} else {
+			this.setDisabled( false );
+		}
+		this.setActive( false );
+	};
+
+	this.toolFactory.register( Tool );
+};
+
+<span id='ImageEditor-method-registerTool'>/**
+</span> * Register an ImageTool with the editor
+ */
+ImageEditor.prototype.registerTool = function ( tool ) {
+	this.tools[ tool.name ] = tool;
+};
+
+<span id='ImageEditor-method-registerCoreTools'>/**
+</span> * Instantiate and register core tools with the editor
+ *
+ * @private
+ */
+ImageEditor.prototype.registerCoreTools = function () {
+	var rotateCounterClockwise, rotateClockwise, flipVertical, flipHorizontal, crop;
+
+	rotateCounterClockwise = new ImageTool( {
+		name: &#39;rotateCounterClockwise&#39;,
+		icon: &#39;rotate-counter-clockwise&#39;,
+		title: &#39;Rotate counter clockwise&#39; // TODO Localizable
+	} );
+	rotateCounterClockwise.doAction = function ( image ) {
+		image.rotate( -90 );
+		image.render();
+		return {};
+	};
+	rotateCounterClockwise.undoAction = function ( image ) {
+		image.rotate( 90 );
+		image.render();
+	};
+	this.registerTool( rotateCounterClockwise );
+
+	rotateClockwise = new ImageTool( {
+		name: &#39;rotateClockwise&#39;,
+		icon: &#39;rotate-clockwise&#39;,
+		title: &#39;Rotate clockwise&#39;
+	} );
+	rotateClockwise.doAction = function ( image ) {
+		image.rotate( 90 );
+		image.render();
+		return {};
+	};
+	rotateClockwise.undoAction = function ( image ) {
+		image.rotate( -90 );
+		image.render();
+	};
+	this.registerTool( rotateClockwise );
+
+	flipVertical = new ImageTool( {
+		name: &#39;flipVertical&#39;,
+		icon: &#39;flip-vertical&#39;,
+		title: &#39;Flip vertical&#39;
+	} );
+	flipVertical.doAction = function ( image ) {
+		image.flip( &#39;y&#39; );
+		image.render();
+		return {};
+	};
+	flipVertical.undoAction = function ( image ) {
+		image.flip( &#39;y&#39; );
+		image.render();
+	};
+	this.registerTool( flipVertical );
+
+	flipHorizontal = new ImageTool( {
+		name: &#39;flipHorizontal&#39;,
+		icon: &#39;flip-horizontal&#39;,
+		title: &#39;Flip horizontal&#39;
+	} );
+	flipHorizontal.doAction = function ( image ) {
+		image.flip( &#39;x&#39; );
+		image.render();
+		return {};
+	};
+	flipHorizontal.undoAction = function ( image ) {
+		image.flip( &#39;x&#39; );
+		image.render();
+	};
+	this.registerTool( flipHorizontal );
+
+	crop = new ImageTool( {
+		name: &#39;crop&#39;,
+		icon: &#39;crop&#39;,
+		title: &#39;Crop&#39;,
+		isInteractive: true
+	} );
+
+	crop.setupInterface = function ( image, panel ) {
+		var controls;
+
+		this.widthInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.heightInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.xInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.yInput = new OO.ui.TextInputWidget( { disabled: true } );
+		this.crop = new OO.ui.ButtonWidget( {
+			label: &#39;Crop&#39;,
+			flags: [ &#39;primary&#39;, &#39;progressive&#39; ]
+		} );
+		this.cancel = new OO.ui.ButtonWidget( {
+			label: &#39;Cancel&#39;,
+			flags: [ &#39;destructive&#39; ]
+		} );
+
+		this.crop.on( &#39;click&#39;, function () {
+			var now, then, action = {
+				width: this.widthInput.getValue(),
+				height: this.heightInput.getValue(),
+				x: this.xInput.getValue(),
+				y: this.yInput.getValue()
+			};
+			action.oldImageData = image.imageData;
+
+			then = new Date();
+			this.doAction( image, action );
+			now = new Date();
+			console.log( &#39;crop took&#39;, now - then, &#39;ms&#39; );
+
+			this.deferred.resolve( action );
+
+			this.$cover.remove();
+		}.bind( this ) );
+
+		this.cancel.on( &#39;click&#39;, function () {
+			this.$cover.remove();
+			this.deferred.reject();
+		}.bind( this ) );
+
+		controls = new OO.ui.HorizontalLayout( {
+			items: [
+				this.widthInput,
+				this.heightInput,
+				this.xInput,
+				this.yInput,
+				this.crop,
+				this.cancel
+			]
+		} );
+		panel.$element.append( controls.$element );
+
+		this.drawCropTool( image );
+	};
+
+	crop.drawCropTool = function ( image ) {
+		this.$canvas = $( image.canvas );
+		this.xRatio = this.$canvas[ 0 ].width / ( this.$canvas.width() * 1.0 );
+		this.yRatio = this.$canvas[ 0 ].height / ( this.$canvas.height() * 1.0 );
+
+		// Gray out the image
+		this.$cover = $( &#39;&lt;div&gt;&#39; )
+			.addClass( &#39;crop-cover&#39; )
+			.appendTo( &#39;body&#39; )
+			.css( {
+				top: this.$canvas.offset().top,
+				left: this.$canvas.offset().left,
+				width: this.$canvas.width(),
+				height: this.$canvas.height()
+			} );
+
+		// Canvas clone
+		this.$canvasClone = this.$canvas.clone().attr( &#39;id&#39;, &#39;&#39; );
+		this.$canvasClone.appendTo( this.$cover );
+		this.$canvasClone[ 0 ].getContext( &#39;2d&#39; ).putImageData( image.imageData, 0, 0 );
+
+		// Cropping rectangle
+		this.$cropRect = $( &#39;&lt;div&gt;&#39; )
+			.addClass( &#39;crop-rect&#39; )
+			.appendTo( this.$cover );
+		this.$cropRect
+			.resizable( {
+				handles: &#39;all&#39;,
+				containment: &#39;parent&#39;
+			} )
+			.draggable( {
+				containment: &#39;parent&#39;
+			} );
+
+		// Use cropping rectanble bounds to show part of
+		// the image and update text boxes
+		this.$cropRect.on( &#39;drag resize&#39;, function () {
+			this.translateCropToCanvas();
+		}.bind( this ) );
+		this.translateCropToCanvas();
+	};
+
+	crop.translateCropToCanvas = function () {
+		var
+			pos = this.$cropRect.position(),
+			left = pos.left,
+			top = pos.top,
+			width = parseFloat( this.$cropRect.css( &#39;width&#39; ) ),
+			height = parseFloat( this.$cropRect.css( &#39;height&#39; ) ),
+			polygonPoints = left + &#39;px &#39; + // Top left
+				top + &#39;px, &#39; +
+				// Top Right
+				( left + width ) + &#39;px &#39; +
+				top  + &#39;px, &#39; +
+				// Bottom Right
+				( left + width ) + &#39;px &#39; +
+				( top + height )  + &#39;px, &#39; +
+				// Bottom Left
+				left + &#39;px &#39; +
+				( top + height )  + &#39;px&#39;;
+
+		// Clip cloned canvas
+		this.$canvasClone.css( &#39;-webkit-clip-path&#39;,  &#39;polygon(&#39; + polygonPoints + &#39; )&#39; );
+
+		// Update inputs with crop values
+		this.widthInput.setValue( width * this.xRatio );
+		this.heightInput.setValue( height * this.yRatio );
+		this.xInput.setValue( left * this.xRatio );
+		this.yInput.setValue( top * this.yRatio );
+	};
+
+	crop.doAction = function ( image, action ) {
+		image.crop( action.width, action.height, action.x, action.y );
+		image.render();
+		return action;
+	};
+
+	crop.undoAction = function ( image, action ) {
+		var canvas = document.createElement( &#39;canvas&#39; );
+		canvas.height = action.oldImageData.height;
+		canvas.width = action.oldImageData.width;
+		canvas.getContext( &#39;2d&#39; ).putImageData(	action.oldImageData, 0, 0 );
+		image.replaceCanvas( canvas );
+	};
+
+	this.registerTool( crop );
+
+};
+
+window.ImageEditor = ImageEditor;
+
+}( jQuery, OO, ImageTool, Caman ) );
+</pre>
+</body>
+</html>

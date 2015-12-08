@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">( function ( $, OO, ImageEditor ) {
+
+$( function () {
+	$( &#39;#demo_images a&#39; ).on( &#39;click&#39;, function ( e ) {
+		var e = new ImageEditor( {
+			containerId: &#39;editor&#39;,
+			imagePath: $( this ).attr( &#39;href&#39; )
+		} );
+		e.initialize();
+		$( &#39;#demo_images&#39; ).remove();
+		return false;
+	} );
+
+} );
+
+}( jQuery, OO, ImageEditor ) );
+</pre>
+</body>
+</html>

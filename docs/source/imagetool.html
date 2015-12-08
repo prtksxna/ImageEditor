@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">( function ( $, OO ) {
+
+var ImageTool;
+
+<span id='ImageTool-cfg-isInteractive'><span id='ImageTool-cfg-title'><span id='ImageTool-cfg-icon'><span id='ImageTool-cfg-name'><span id='ImageTool'>/**
+</span></span></span></span></span> * @class ImageTool
+ *
+ * Tools used within ImageEditor.
+ *
+ * ## Simple tools
+ * To register a simple tool like rotate, only implement the
+ * {@link #doAction} and {@link #undoAction} methods.
+ *
+ *     rotateClockwise = new ImageTool( {
+ *     	name: &#39;rotateClockwise&#39;,
+ *     	icon: &#39;rotate-clockwise&#39;,
+ *     	title: &#39;Rotate clockwise&#39;
+ *     } );
+ *
+ *     rotateClockwise.doAction = function ( image ) {
+ *     	// Call Caman methods directly on image
+ *     	image.rotate( 90 );
+ *     	image.render();
+ *     	return {};
+ *     };
+ *
+ *     rotateClockwise.undoAction = function ( image ) {
+ *     	// The rotate tool doesn&#39;t need its action object to undo
+ *     	image.rotate( -90 );
+ *     	image.render();
+ *     };
+ *
+ *     // Register the tool before calling editor.initialize()
+ *     editor.registerTool( rotateClockwise );
+ *
+ * If the icon doesn&#39;t exist in OOjs UI, add the CSS class to render a
+ * custom icon.
+ *
+ *     .oo-ui-icon-rotate-clockwise {
+ *     	background-image: url( icons/rotate-clockwise.svg );
+ *     }
+ *
+ * ## Interactive tools
+ *
+ * Some tools, like crop, need an additional user interface to collect
+ * data from the user and complete their action. For such tools set
+ * {@link #cfg-isInteractive} to `true`. The editor will pass an
+ * OO.ui.PanelLayout to render the additional interface. The
+ * {@link #doAction} and {@link #undoAction} should still be structured
+ * the same way as they are called by the undo and redo methods of the
+ * editor. The additional interface of the tool is responsible for calling
+ * {@link #doAction} with the right parameters.
+ *
+ *     crop = new ImageTool( {
+ *     	name: &#39;crop&#39;,
+ *     	icon: &#39;crop&#39;,
+ *     	title: &#39;Crop&#39;,
+ *     	isInteractive: true
+ *     } );
+ *
+ *     crop.setupInterface = function ( image, panel ) {
+ *     	var controls;
+ *
+ *     	this.widthInput = new OO.ui.TextInputWidget( { value: 20 } );
+ *     	this.heightInput = new OO.ui.TextInputWidget( { value: 20 } );
+ *     	this.xInput = new OO.ui.TextInputWidget( { value: 0 } );
+ *     	this.yInput = new OO.ui.TextInputWidget( { value: 0 } );
+ *     	this.crop = new OO.ui.ButtonWidget( {
+ *     		label: &#39;Crop&#39;,
+ *     		flags: [ &#39;primary&#39;, &#39;progressive&#39; ]
+ *     	} );
+ *     	this.cancel = new OO.ui.ButtonWidget( {
+ *     		label: &#39;Cancel&#39;,
+ *     		flags: [ &#39;destructive&#39; ]
+ *     	} );
+ *
+ *     	this.crop.on( &#39;click&#39;, function () {
+ *     		var action = {
+ *     			width: this.widthInput.getValue(),
+ *     			height: this.heightInput.getValue(),
+ *     			x: this.xInput.getValue(),
+ *     			y: this.yInput.getValue()
+ *     		};
+ *
+ *     		// Call doAction from a UI event
+ *     		this.deferred.resolve( this.doAction( image, action ) );
+ *     	}.bind( this ) );
+ *
+ *     	this.cancel.on( &#39;click&#39;, function () {
+ *     		// Reject the deferred if tool couldn&#39;t complete the action
+ *     		this.deferred.reject();
+ *     	}.bind( this ) );
+ *
+ *     	controls = new OO.ui.HorizontalLayout( {
+ *     		items: [
+ *     			this.widthInput,
+ *     			this.heightInput,
+ *     			this.xInput,
+ *     			this.yInput,
+ *     			this.crop,
+ *     			this.cancel
+ *     		]
+ *     	} );
+ *     	panel.$element.append( controls.$element );
+ *     };
+ *
+ *     crop.doAction = function ( image, action ) {
+ *     	// Save old image data before cropping, will need this for undo
+ *     	action.oldImageData = image.imageData;
+ *     	image.crop( action.width, action.height, action.x, action.y );
+ *     	image.render();
+ *     	return action;
+ *     };
+ *
+ *     crop.undoAction = function ( image, action ) {
+ *     	// Restore the old image on the canvas
+ *     	var canvas = image.canvas;
+ *     	canvas.height = action.oldImageData.height;
+ *     	canvas.width = action.oldImageData.width;
+ *     	image.canvas.getContext( &#39;2d&#39; ).putImageData( action.oldImageData, 0, 0 );
+ *     };
+ *
+ *     this.registerTool( crop );
+ *
+ * See ImageEditor.registerCoreTools for more exaples.
+ *
+ * ## Updating the toolbar
+ * After registering the tool the update ImageEditor.toolbarGroups for it
+ * to show up in the editor&#39;s main toolbar.
+ *
+ *     editor.setToolbarGroup( editor.getToolbarGroup().push( {
+ *     	type: &#39;bar&#39;,
+ *     	includes: [ &#39;myNewTool&#39; ]
+ *     } ) );
+ *
+ * @cfg {string} name (required)
+ * @cfg {string} icon (required)
+ * @cfg {string} title (required)
+ * @cfg {boolean} [isInteractive=false]
+ */
+ImageTool = function ( config ) {
+
+	if (
+		config.name === undefined ||
+		config.icon === undefined ||
+		config.title === undefined
+	) {
+		throw new Error( &#39;All config not passed&#39; );
+	}
+
+	this.name =  config.name;
+	this.icon = config.icon;
+	this.title = config.title;
+	this.isInteractive = config.isInteractive || false;
+};
+
+OO.initClass( ImageTool );
+
+<span id='ImageTool-method-doAction'>/**
+</span> * Does the action of the tool.
+ *
+ * @abstract
+ * @method doAction
+ * @param {Caman} image Caman image object to be maupilated.
+ * @param {Object} [action] Passed when action is being re-done.
+ * @return {Object} Returns an action object to be saved by the
+ * editor. This action should have data required by the tool to undo
+ * its action.
+ */
+ImageTool.prototype.doAction = null;
+
+<span id='ImageTool-method-undoAction'>/**
+</span> * Undoes the action of the tool.
+ *
+ * @abstract
+ * @method undoAction
+ * @param {Caman} image Caman image object to be maupilated.
+ * @param {Object} action Passes previously saved action data to undo.
+ */
+ImageTool.prototype.undoAction = null;
+
+// Interactive tool specific methods
+
+<span id='ImageTool-method-getAction'>/**
+</span> * Called for interactive tool. Returns a promise that should be
+ * resolved with the action object once the tool is done processing.
+ *
+ * @method getAction
+ * @param {Caman} image Caman image object to be maupilated.
+ * @param {OO.ui.PanelLayout} panel Panel object to render additional UI for the tool
+ */
+ImageTool.prototype.getAction = function ( image, panel ) {
+	this.deferred = $.Deferred();
+	this.setupInterface( image, panel );
+	return this.deferred.promise();
+};
+
+<span id='ImageTool-method-setupInterface'>/**
+</span> * Called by {@link #getAction} to setup the required UI elements for
+ * the interactive tool. It should setup the UI control that calls
+ * {@link #doAction} with the required `action` object.
+ *
+ * @abstract
+ * @private
+ * @method setupInterface
+ * @param {Caman} image Caman image object to be maupilated.
+ * @param {OO.ui.PanelLayout} panel Panel object to render additional UI for the tool
+ */
+ImageTool.prototype.setupInterface = null;
+
+window.ImageTool = ImageTool;
+
+}( jQuery, OO ) );
+</pre>
+</body>
+</html>

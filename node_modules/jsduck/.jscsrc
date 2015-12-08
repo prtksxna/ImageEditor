@@ -1,0 +1,62 @@
+{
+    "disallowEmptyBlocks": true,
+    "disallowMixedSpacesAndTabs": true,
+    "disallowMultipleLineStrings": true,
+    "disallowMultipleSpaces": true,
+    "disallowSpaceAfterKeywords":
+    [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "switch",
+        "try",
+        "catch"
+    ],
+    "disallowSpaceAfterObjectKeys": true,
+    "disallowSpacesInCallExpression": true,
+    "disallowSpacesInFunctionDeclaration":
+    {
+        "beforeOpeningRoundBrace": true,
+        "beforeOpeningCurlyBrace": true
+    },
+    "disallowTrailingWhitespace": true,
+    "disallowYodaConditions": true,
+    "maximumLineLength": 120,
+    "requireCamelCaseOrUpperCaseIdentifiers": true,
+    "requireCommaBeforeLineBreak": true,
+    "requireCurlyBraces": 
+    [
+        "if",
+        "else",
+        "for",
+        "while",
+        "do",
+        "try",
+        "catch",
+        "case",
+        "default"
+    ],
+    "requireFunctionDeclarations": true,
+    "requireKeywordsOnNewLine": ["else", "catch"],
+    "requireLineFeedAtFileEnd": true,
+    "requireNewlineBeforeBlockStatements": true,
+    "requireSemicolons": true,
+    "requireSpaceBeforeBinaryOperators":
+    [
+        "=",
+        "+",
+        "-",
+        "/",
+        "*",
+        "==",
+        "===",
+        "!=",
+        "!=="
+    ],
+    "requireSpaceBetweenArguments": true,
+    "validateIndentation": 4,
+    "validateLineBreaks": "LF",
+    "validateQuoteMarks": "\""
+}
