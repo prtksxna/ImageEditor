@@ -193,6 +193,8 @@ ImageEditor.prototype.setupToolbar = function () {
 	this.toolbar.emit( 'updateState' );
 
 	this.toolbar.$actions.append( this.saveButton.$element );
+	// TODO There has to be a more elegant way to do this.
+	this.$container.css( { 'margin-top': this.toolbar.$element.height() + 'px' } );
 };
 
 /**
@@ -409,6 +411,7 @@ ImageEditor.prototype.setupTool = function ( tool ) {
 				} ).always( function () {
 					editor.setInteractiveTool( false );
 				} );
+
 		} else {
 			action = tool.doAction( editor.image );
 			editor.addAction( tool.name, action );
@@ -543,10 +546,10 @@ ImageEditor.prototype.registerCoreTools = function () {
 			this.deferred.resolve( action );
 
 			this.$cover.remove();
-			this.$cropRect.remove();
 		}.bind( this ) );
 
 		this.cancel.on( 'click', function () {
+			this.$cover.remove();
 			this.deferred.reject();
 		}.bind( this ) );
 
