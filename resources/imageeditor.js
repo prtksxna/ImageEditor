@@ -187,6 +187,9 @@ ImageEditor.prototype.setupToolbar = function () {
 		flags: [ 'constructive', 'primary' ]
 	} ).on( 'click', function () {
 		editor.emit( 'save', editor.image.pixelData );
+
+		// TODO Only for testing
+		editor.image.browserSave( 'jpg' );
 	} );
 
 	// Refresh the undo redo states
