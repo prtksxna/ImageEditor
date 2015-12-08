@@ -657,10 +657,11 @@ ImageEditor.prototype.registerCoreTools = function () {
 	};
 
 	crop.undoAction = function ( image, action ) {
-		var canvas = image.canvas;
+		var canvas = document.createElement( 'canvas' );
 		canvas.height = action.oldImageData.height;
 		canvas.width = action.oldImageData.width;
 		canvas.getContext( '2d' ).putImageData(	action.oldImageData, 0, 0 );
+		image.replaceCanvas( canvas );
 	};
 
 	this.registerTool( crop );
