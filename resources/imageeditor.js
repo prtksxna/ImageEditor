@@ -405,7 +405,7 @@ ImageEditor.prototype.setupTool = function ( tool ) {
 	Tool.static.title = tool.title;
 
 	Tool.prototype.onSelect = function () {
-		var action;
+		var action, then, now;
 		if ( tool.isInteractive ) {
 			editor.setInteractiveTool( true );
 			tool.getAction( editor.image, editor.interactivePanel )
@@ -416,7 +416,10 @@ ImageEditor.prototype.setupTool = function ( tool ) {
 				} );
 
 		} else {
+			then = new Date();
 			action = tool.doAction( editor.image );
+			now = new Date();
+			console.log( tool.name, 'took', now - then, 'ms' );
 			editor.addAction( tool.name, action );
 		}
 
@@ -538,14 +541,19 @@ ImageEditor.prototype.registerCoreTools = function () {
 		} );
 
 		this.crop.on( 'click', function () {
-			var action = {
+			var now, then, action = {
 				width: this.widthInput.getValue(),
 				height: this.heightInput.getValue(),
 				x: this.xInput.getValue(),
 				y: this.yInput.getValue()
 			};
 			action.oldImageData = image.imageData;
+
+			then = new Date();
 			this.doAction( image, action );
+			now = new Date();
+			console.log( 'crop took', now - then, 'ms' );
+
 			this.deferred.resolve( action );
 
 			this.$cover.remove();
